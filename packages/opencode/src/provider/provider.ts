@@ -1116,6 +1116,8 @@ const layer: Layer.Layer<
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
         function isProviderAllowed(providerID: ProviderID): boolean {
+          const allowlist = Flag.OPENCODE_ALLOWED_PROVIDERS
+          if (allowlist.length > 0 && !allowlist.includes(providerID)) return false
           if (enabled && !enabled.has(providerID)) return false
           if (disabled.has(providerID)) return false
           return true

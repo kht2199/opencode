@@ -18,6 +18,7 @@ import { Agent } from "@/agent/agent"
 import { Snapshot } from "@/snapshot"
 import { Command } from "@/command"
 import * as Log from "@opencode-ai/core/util/log"
+import { Flag } from "@opencode-ai/core/flag/flag"
 import { Permission } from "@/permission"
 import { PermissionID } from "@/permission/schema"
 import { ModelID, ProviderID } from "@/provider/schema"
@@ -467,14 +468,16 @@ export const SessionRoutes = lazy(() =>
           sessionID: SessionID.zod,
         }),
       ),
-      async (c) =>
-        jsonRequest("SessionRoutes.share", c, function* () {
+      async (c) => {
+        if (Flag.OPENCODE_DISABLE_SHARE) return c.json({ error: "Share is disabled" }, 403)
+        return jsonRequest("SessionRoutes.share", c, function* () {
           const sessionID = c.req.valid("param").sessionID
           const share = yield* SessionShare.Service
           const session = yield* Session.Service
           yield* share.share(sessionID)
           return yield* session.get(sessionID)
-        }),
+        })
+      },
     )
     .get(
       "/:sessionID/diff",
@@ -535,14 +538,16 @@ export const SessionRoutes = lazy(() =>
           sessionID: SessionID.zod,
         }),
       ),
-      async (c) =>
-        jsonRequest("SessionRoutes.unshare", c, function* () {
+      async (c) => {
+        if (Flag.OPENCODE_DISABLE_SHARE) return c.json({ error: "Share is disabled" }, 403)
+        return jsonRequest("SessionRoutes.unshare", c, function* () {
           const sessionID = c.req.valid("param").sessionID
           const share = yield* SessionShare.Service
           const session = yield* Session.Service
           yield* share.unshare(sessionID)
           return yield* session.get(sessionID)
-        }),
+        })
+      },
     )
     .post(
       "/:sessionID/summarize",

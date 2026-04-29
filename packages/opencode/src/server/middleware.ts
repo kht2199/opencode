@@ -42,7 +42,7 @@ export const AuthMiddleware: MiddlewareHandler = (c, next) => {
   // Browser clients sending Authorization headers will preflight with OPTIONS.
   if (c.req.method === "OPTIONS") return next()
   const password = Flag.OPENCODE_SERVER_PASSWORD
-  if (!password) return next()
+  if (!password) return c.json({ error: "Server password not configured" }, 401)
   const username = Flag.OPENCODE_SERVER_USERNAME ?? "opencode"
 
   if (c.req.query("auth_token")) c.req.raw.headers.set("authorization", `Basic ${c.req.query("auth_token")}`)
@@ -71,13 +71,6 @@ export function CorsMiddleware(opts?: { cors?: string[] }): MiddlewareHandler {
     maxAge: 86_400,
     origin(input) {
       if (!input) return
-
-      if (input.startsWith("http://localhost:")) return input
-      if (input.startsWith("http://127.0.0.1:")) return input
-      if (input === "tauri://localhost" || input === "http://tauri.localhost" || input === "https://tauri.localhost")
-        return input
-
-      if (/^https:\/\/([a-z0-9-]+\.)*opencode\.ai$/.test(input)) return input
       if (opts?.cors?.includes(input)) return input
     },
   })
