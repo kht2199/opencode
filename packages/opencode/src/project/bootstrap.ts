@@ -1,4 +1,3 @@
-import { Plugin } from "../plugin"
 import { Format } from "../format"
 import { LSP } from "@/lsp/lsp"
 import { File } from "../file"
@@ -18,8 +17,6 @@ export const InstanceBootstrap = Effect.gen(function* () {
   Log.Default.info("bootstrapping", { directory: Instance.directory })
   // everything depends on config so eager load it for nice traces
   yield* Config.Service.use((svc) => svc.get())
-  // Plugin can mutate config so it has to be initialized before anything else.
-  yield* Plugin.Service.use((svc) => svc.init())
   yield* Effect.all(
     [
       LSP.Service,
