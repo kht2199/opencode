@@ -10,6 +10,10 @@ describe("Flag on-premise defaults", () => {
     expect(Flag.OPENCODE_DISABLE_LSP_DOWNLOAD).toBe(true)
   })
 
+  test("OPENCODE_DISABLE_RIPGREP_DOWNLOAD defaults to true", () => {
+    expect(Flag.OPENCODE_DISABLE_RIPGREP_DOWNLOAD).toBe(true)
+  })
+
   test("OPENCODE_DISABLE_MODELS_FETCH defaults to true", () => {
     expect(Flag.OPENCODE_DISABLE_MODELS_FETCH).toBe(true)
   })
@@ -26,7 +30,7 @@ describe("Flag on-premise defaults", () => {
     expect(Flag.OPENCODE_AUTO_SHARE).toBe(false)
   })
 
-  test("OPENCODE_ALLOWED_PROVIDERS defaults to openai and openai-compatible", () => {
-    expect(Flag.OPENCODE_ALLOWED_PROVIDERS).toEqual(["openai", "openai-compatible"])
+  test("OPENCODE_ALLOWED_PROVIDERS defaults to openai-compatible only", () => {
+    expect(Flag.OPENCODE_ALLOWED_PROVIDERS).toEqual(["openai-compatible"])
   })
 })

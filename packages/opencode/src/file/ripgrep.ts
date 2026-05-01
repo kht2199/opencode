@@ -10,6 +10,7 @@ import { CrossSpawnSpawner } from "@opencode-ai/core/cross-spawn-spawner"
 import { Global } from "@opencode-ai/core/global"
 import * as Log from "@opencode-ai/core/util/log"
 import { sanitizedProcessEnv } from "@opencode-ai/core/util/opencode-process"
+import { Flag } from "@opencode-ai/core/flag/flag"
 import { which } from "@/util/which"
 import { zod } from "@/util/effect-zod"
 import { NonNegativeInt, withStatics } from "@/util/schema"
@@ -293,6 +294,10 @@ export const layer: Layer.Layer<Service, never, AppFileSystem.Service | ChildPro
 
           const target = path.join(Global.Path.bin, `rg${process.platform === "win32" ? ".exe" : ""}`)
           if (yield* fs.isFile(target).pipe(Effect.orDie)) return target
+
+          if (Flag.OPENCODE_DISABLE_RIPGREP_DOWNLOAD) {
+            return yield* Effect.fail(new Error("ripgrep not found and download is disabled (OPENCODE_DISABLE_RIPGREP_DOWNLOAD)"))
+          }
 
           const platformKey = `${process.arch}-${process.platform}` as keyof typeof PLATFORM
           const config = PLATFORM[platformKey]

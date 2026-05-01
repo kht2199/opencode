@@ -1,0 +1,59 @@
+name: build-onpremise
+
+on:
+  push:
+    tags:
+      - "onpremise-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. onpremise-v1.0.0)"
+        required: true
+        type: string
+      embed_web_ui:
+        description: "Embed web UI into binary"
+        required: false
+        default: false
+        type: boolean
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Determine release tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "value=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build closecode.exe
+        working-directory: packages/opencode
+        run: |
+          ARGS="--skip-install"
+          if [ "${{ inputs.embed_web_ui }}" != "true" ]; then
+            ARGS="$ARGS --skip-embed-web-ui"
+          fi
+          bun run script/build-windows.ts $ARGS --release --tag "${{ steps.tag.outputs.value }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: closecode-windows-x64
+          path: packages/opencode/dist/closecode-windows-x64.zip
+          retention-days: 30

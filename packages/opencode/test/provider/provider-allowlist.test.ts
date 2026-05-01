@@ -36,10 +36,10 @@ describe("OPENCODE_ALLOWED_PROVIDERS", () => {
     ;(Flag as any).OPENCODE_ALLOWED_PROVIDERS = originalAllowed
   })
 
-  test("default allowlist contains only openai and openai-compatible", () => {
-    expect(Flag.OPENCODE_ALLOWED_PROVIDERS).toContain("openai")
+  test("default allowlist contains only openai-compatible", () => {
     expect(Flag.OPENCODE_ALLOWED_PROVIDERS).toContain("openai-compatible")
-    expect(Flag.OPENCODE_ALLOWED_PROVIDERS.length).toBe(2)
+    expect(Flag.OPENCODE_ALLOWED_PROVIDERS).not.toContain("openai")
+    expect(Flag.OPENCODE_ALLOWED_PROVIDERS.length).toBe(1)
   })
 
   test("filters out providers not in allowlist", async () => {
