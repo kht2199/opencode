@@ -225,4 +225,4 @@ winget install BurntSushi.ripgrep
 | 대화 외부 공유 | 차단 | `OPENCODE_DISABLE_SHARE=false` |
 | ripgrep 자동 다운로드 | 차단 | `OPENCODE_DISABLE_RIPGREP_DOWNLOAD=false` |
 | 웹 검색 | 차단 | (비활성화 고정) |
-| 기본 허용 provider | `openai-compatible` 만 | `OPENCODE_ALLOWED_PROVIDERS=openai-compatible,openai` |
+| 기본 허용 provider | `openai-compatible` 만 | (변경 불필요) |
