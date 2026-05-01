@@ -37,7 +37,7 @@ export const ErrorMiddleware: ErrorHandler = (err, c) => {
   })
 }
 
-export const AuthMiddleware: MiddlewareHandler = (c, next) => {
+export const AuthMiddleware: MiddlewareHandler = async (c, next) => {
   // Allow CORS preflight requests to succeed without auth.
   // Browser clients sending Authorization headers will preflight with OPTIONS.
   if (c.req.method === "OPTIONS") return next()
