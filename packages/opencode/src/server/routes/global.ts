@@ -11,6 +11,7 @@ import { AsyncQueue } from "@/util/queue"
 import { Instance } from "../../project/instance"
 import { Installation } from "@/installation"
 import { InstallationVersion } from "@opencode-ai/core/installation/version"
+import { Flag } from "@opencode-ai/core/flag/flag"
 import * as Log from "@opencode-ai/core/util/log"
 import { lazy } from "../../util/lazy"
 import { Config } from "@/config/config"
@@ -247,6 +248,8 @@ export const GlobalRoutes = lazy(() =>
         }),
       ),
       async (c) => {
+        if (Flag.OPENCODE_DISABLE_AUTOUPDATE)
+          return c.json({ success: false as const, error: "Upgrade is disabled in this deployment" }, 403)
         const result = await AppRuntime.runPromise(
           Installation.Service.use((svc) =>
             Effect.gen(function* () {

@@ -3,6 +3,7 @@ import { UI } from "../ui"
 import * as prompts from "@clack/prompts"
 import { Installation } from "../../installation"
 import { InstallationVersion } from "@opencode-ai/core/installation/version"
+import { Flag } from "@opencode-ai/core/flag/flag"
 
 export const UpgradeCommand = {
   command: "upgrade [target]",
@@ -25,6 +26,11 @@ export const UpgradeCommand = {
     UI.println(UI.logo("  "))
     UI.empty()
     prompts.intro("Upgrade")
+    if (Flag.OPENCODE_DISABLE_AUTOUPDATE) {
+      prompts.log.error("Upgrade is disabled in this deployment (OPENCODE_DISABLE_AUTOUPDATE)")
+      prompts.outro("Done")
+      return
+    }
     const detectedMethod = await Installation.method()
     const method = (args.method as Installation.Method) ?? detectedMethod
     if (method === "unknown") {
