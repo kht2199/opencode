@@ -1,62 +1,49 @@
-# opencode 온프레미스 사용 가이드 (Windows Git Bash)
+# CloseCode 온프레미스 사용 가이드 (Windows Git Bash)
 
 ## 준비물
 
 - Windows Git Bash
-- `opencode.exe` (빌드 방법은 아래 참고)
-- 사내 LLM API 엔드포인트 (OpenAI 호환)
+- `closecode.exe` (GitHub Releases에서 다운로드 또는 직접 빌드)
+- 사내 LLM API 엔드포인트 (OpenAI 호환) **또는** 로컬 Ollama 인스턴스
 - (선택) `rg.exe` — 파일 검색 기능 사용 시 필요
 
 ---
 
-## 빌드 방법
+## 다운로드
+
+GitHub Releases 페이지에서 `closecode-windows-x64.zip`을 다운로드하여 압축 해제합니다.
+
+```
+closecode-windows-x64/
+  bin/
+    closecode.exe       ← 실행 파일
+  skills/               ← 번들 스킬 (자동 적용)
+  opencode.json.example ← 설정 예시
+  README.ko.md          ← 이 문서
+```
+
+---
+
+## 빌드 방법 (직접 빌드 시)
 
 macOS 또는 Linux에서 Windows용 바이너리를 빌드합니다.
 
 ```bash
 cd packages/opencode
-bun run script/build-windows.ts --skip-embed-web-ui --skip-install
+bun run script/build-windows.ts --skip-embed-web-ui --skip-install --release --tag v0.0.0
 ```
 
-결과물: `packages/opencode/dist/opencode-windows-x64/bin/opencode.exe`
+결과물: `packages/opencode/dist/closecode-windows-x64/bin/closecode.exe`
 
 ---
 
-## 환경변수 설정
+## LLM 연결 방법
 
-### 필수 설정
+### 방법 1: 사내 LLM (OpenAI 호환 API)
 
-| 환경변수 | 설명 |
-|---|---|
-| `OPENAI_API_KEY` | 사내 LLM API 키 |
+사내에 OpenAI 호환 API 서버가 있을 경우 사용합니다.
 
-### 선택 설정
-
-| 환경변수 | 기본값 | 설명 |
-|---|---|---|
-| `OPENCODE_SERVER_PASSWORD` | (없음) | 서버 모드 사용 시 Basic Auth 비밀번호 |
-| `OPENCODE_SERVER_USERNAME` | `opencode` | 서버 모드 사용 시 Basic Auth 사용자명 |
-| `OPENCODE_ALLOWED_PROVIDERS` | `openai-compatible` | 허용할 provider 목록 (콤마 구분) |
-
-### Git Bash에서 환경변수 적용
-
-**일시적 설정 (현재 세션만):**
-```bash
-export OPENAI_API_KEY="your-api-key"
-```
-
-**영구 설정 (`~/.bashrc`에 추가):**
-```bash
-echo 'export OPENAI_API_KEY="your-api-key"' >> ~/.bashrc
-source ~/.bashrc
-```
-
----
-
-## opencode.json 설정
-
-프로젝트 루트 또는 홈 디렉토리(`~/.config/opencode/opencode.json`)에 설정 파일을 생성합니다.
-
+**`~/.config/opencode/opencode.json`**:
 ```json
 {
   "provider": {
@@ -81,7 +68,75 @@ source ~/.bashrc
 }
 ```
 
-> **참고:** `apiKey`는 `opencode.json` 대신 환경변수 `OPENAI_API_KEY`로 설정해도 됩니다.
+API 키는 설정 파일 대신 환경변수로 설정할 수 있습니다:
+```bash
+export OPENAI_API_KEY="your-api-key"
+```
+
+---
+
+### 방법 2: 로컬 Ollama (인터넷 없이 사용)
+
+[Ollama](https://ollama.com)를 설치하고 로컬에서 실행하면 외부 네트워크 없이 LLM을 사용할 수 있습니다.  
+Ollama는 OpenAI 호환 API를 `http://localhost:11434`에서 제공하므로 `openai-compatible` 프로바이더로 연결합니다.
+
+**Ollama 설치 및 모델 실행:**
+```bash
+# Windows에서 Ollama 설치 (https://ollama.com/download)
+# Git Bash에서:
+ollama pull llama3.2        # 또는 원하는 모델
+ollama serve                # 백그라운드 실행 (보통 자동 시작)
+```
+
+**`~/.config/opencode/opencode.json`**:
+```json
+{
+  "provider": {
+    "openai-compatible": {
+      "name": "Ollama (로컬)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1",
+        "apiKey": "ollama"
+      },
+      "models": {
+        "llama3.2": {
+          "name": "Llama 3.2",
+          "contextLength": 128000
+        }
+      }
+    }
+  },
+  "model": "openai-compatible/llama3.2"
+}
+```
+
+> **참고:** Ollama는 API 키가 필요 없지만 `apiKey` 필드를 임의의 값으로 채워야 합니다.
+
+---
+
+## 환경변수 설정
+
+### 필수 (사내 LLM 사용 시)
+
+| 환경변수 | 설명 |
+|---|---|
+| `OPENAI_API_KEY` | 사내 LLM API 키 |
+
+### 선택
+
+| 환경변수 | 기본값 | 설명 |
+|---|---|---|
+| `OPENCODE_SERVER_PASSWORD` | (없음) | 서버 모드 Basic Auth 비밀번호 |
+| `OPENCODE_SERVER_USERNAME` | `opencode` | 서버 모드 Basic Auth 사용자명 |
+| `OPENCODE_ALLOWED_PROVIDERS` | `openai-compatible` | 허용 provider 목록 (콤마 구분) |
+
+### Git Bash에서 영구 설정 (`~/.bashrc`에 추가)
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+```
+
+적용: `source ~/.bashrc`
 
 ---
 
@@ -90,23 +145,21 @@ source ~/.bashrc
 ### TUI 모드 (기본)
 
 ```bash
-./opencode.exe
+./closecode.exe
 ```
-
-터미널 UI가 열리면서 바로 사용할 수 있습니다.
 
 ### 특정 디렉토리에서 실행
 
 ```bash
 cd /c/Users/yourname/project
-/path/to/opencode.exe
+/path/to/closecode.exe
 ```
 
 ### 서버 모드 (헤드리스)
 
 ```bash
 export OPENCODE_SERVER_PASSWORD="secure-password"
-./opencode.exe serve --port 4096
+./closecode.exe serve --port 4096
 ```
 
 ---
@@ -206,16 +259,13 @@ winget install BurntSushi.ripgrep
 
 온프레미스 배포 시 아래 항목이 기본으로 차단되어 있습니다.
 
-| 항목 | 상태 |
-|---|---|
-| 자동 업데이트 | 차단 |
-| LSP 서버 다운로드 | 차단 |
-| 모델 목록 외부 fetch | 차단 |
-| 외부 skills | 차단 |
-| 대화 외부 공유 | 차단 |
-| ripgrep 자동 다운로드 | 차단 |
-| 웹 검색 | 차단 |
-| 기본 허용 provider | `openai-compatible` 만 |
-
-비활성화가 필요한 항목은 환경변수를 `false`로 설정하여 해제할 수 있습니다.  
-예: `OPENCODE_DISABLE_SHARE=false` → 공유 기능 활성화
+| 항목 | 상태 | 환경변수로 해제 |
+|---|---|---|
+| 자동 업데이트 | 차단 | `OPENCODE_DISABLE_AUTOUPDATE=false` |
+| LSP 서버 다운로드 | 차단 | `OPENCODE_DISABLE_LSP_DOWNLOAD=false` |
+| 모델 목록 외부 fetch | 차단 | `OPENCODE_DISABLE_MODELS_FETCH=false` |
+| 외부 skills | 차단 | `OPENCODE_DISABLE_EXTERNAL_SKILLS=false` |
+| 대화 외부 공유 | 차단 | `OPENCODE_DISABLE_SHARE=false` |
+| ripgrep 자동 다운로드 | 차단 | `OPENCODE_DISABLE_RIPGREP_DOWNLOAD=false` |
+| 웹 검색 | 차단 | (비활성화 고정) |
+| 기본 허용 provider | `openai-compatible` 만 | `OPENCODE_ALLOWED_PROVIDERS=openai-compatible,ollama` |
