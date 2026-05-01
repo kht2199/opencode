@@ -4,7 +4,7 @@
 
 - Windows Git Bash
 - `closecode.exe` (GitHub Releases에서 다운로드 또는 직접 빌드)
-- 사내 LLM API 엔드포인트 (OpenAI 호환) **또는** 로컬 Ollama 인스턴스
+- 사내 LLM API 엔드포인트 (OpenAI 호환)
 - (선택) `rg.exe` — 파일 검색 기능 사용 시 필요
 
 ---
@@ -39,10 +39,6 @@ bun run script/build-windows.ts --skip-embed-web-ui --skip-install --release --t
 
 ## LLM 연결 방법
 
-### 방법 1: 사내 LLM (OpenAI 호환 API)
-
-사내에 OpenAI 호환 API 서버가 있을 경우 사용합니다.
-
 **`~/.config/opencode/opencode.json`**:
 ```json
 {
@@ -72,45 +68,6 @@ API 키는 설정 파일 대신 환경변수로 설정할 수 있습니다:
 ```bash
 export OPENAI_API_KEY="your-api-key"
 ```
-
----
-
-### 방법 2: 로컬 Ollama (인터넷 없이 사용)
-
-[Ollama](https://ollama.com)를 설치하고 로컬에서 실행하면 외부 네트워크 없이 LLM을 사용할 수 있습니다.  
-Ollama는 OpenAI 호환 API를 `http://localhost:11434`에서 제공하므로 `openai-compatible` 프로바이더로 연결합니다.
-
-**Ollama 설치 및 모델 실행:**
-```bash
-# Windows에서 Ollama 설치 (https://ollama.com/download)
-# Git Bash에서:
-ollama pull llama3.2        # 또는 원하는 모델
-ollama serve                # 백그라운드 실행 (보통 자동 시작)
-```
-
-**`~/.config/opencode/opencode.json`**:
-```json
-{
-  "provider": {
-    "openai-compatible": {
-      "name": "Ollama (로컬)",
-      "options": {
-        "baseURL": "http://localhost:11434/v1",
-        "apiKey": "ollama"
-      },
-      "models": {
-        "llama3.2": {
-          "name": "Llama 3.2",
-          "contextLength": 128000
-        }
-      }
-    }
-  },
-  "model": "openai-compatible/llama3.2"
-}
-```
-
-> **참고:** Ollama는 API 키가 필요 없지만 `apiKey` 필드를 임의의 값으로 채워야 합니다.
 
 ---
 
@@ -268,4 +225,4 @@ winget install BurntSushi.ripgrep
 | 대화 외부 공유 | 차단 | `OPENCODE_DISABLE_SHARE=false` |
 | ripgrep 자동 다운로드 | 차단 | `OPENCODE_DISABLE_RIPGREP_DOWNLOAD=false` |
 | 웹 검색 | 차단 | (비활성화 고정) |
-| 기본 허용 provider | `openai-compatible` 만 | `OPENCODE_ALLOWED_PROVIDERS=openai-compatible,ollama` |
+| 기본 허용 provider | `openai-compatible` 만 | `OPENCODE_ALLOWED_PROVIDERS=openai-compatible,openai` |
